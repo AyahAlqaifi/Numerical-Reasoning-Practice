@@ -1,5 +1,8 @@
 # 🧠 Numeric Reasoning Practice App
 
+**🔗 Quick Access to Website:**  
+👉 [https://ayahalqaifi.github.io/Numerical-Reasoning-Practice/](https://ayahalqaifi.github.io/Numerical-Reasoning-Practice/)
+
 This is a browser-based **numeric reasoning quiz** designed to help users practise number logic in a style similar to Thomas International’s Number Speed & Accuracy test. It challenges users to determine which number is numerically further from the third — the highest or the lowest.
 
 ---
