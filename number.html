@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Numeric Reasoning Practice</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f4f4;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .container {
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+    }
+    #question,
+    #score {
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .number-box {
+      display: inline-block;
+      background: #f0f0f0;
+      color: #333;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+      width: 80px;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+    }
+    .number-box:hover {
+      background-color: #e0e0e0;
+    }
+    .correct {
+      background-color: #4caf50 !important;
+      color: #fff;
+    }
+    .selected-wrong {
+      background-color: #e53935;
+      color: #fff;
+    }
+    #difficulty-select,
+    #start-btn,
+    #retry-btn {
+      margin: 0 auto 1rem auto;
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    #start-btn,
+    #retry-btn {
+      background-color: #00796b;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    #start-btn:hover,
+    #retry-btn:hover {
+      background-color: #004d40;
+    }
+  </style>
+</head>
+
+<body>
+  <button onclick="window.location.href='index.html'"
+    style="position:fixed; top:12px; left:12px; padding:8px 12px; border-radius:10px; border:1px solid #e5e7eb; background:#fff; cursor:pointer;">
+    ← Back to Menu
+  </button>
+
+  <div class="container">
+    <h1>Number Speed & Accuracy</h1>
+    <select id="difficulty-select">
+      <option value="">Select Difficulty</option>
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+    <button id="start-btn" onclick="startQuiz()">Start Quiz</button>
+    <button id="retry-btn" onclick="location.reload()" style="display:none;">Retry Quiz</button>
+
+    <div id="question"></div>
+    <div id="options-container"></div>
+    <div id="score"></div>
+  </div>
+
+  <script>
+    const TOTAL_QUESTIONS = 30;
+    let currentQuestion = 0;
+    let score = 0;
+    let timerInterval;
+    let timeLeft;
+    let questions = [];
+    let answered = false;
+    let currentDifficulty = "medium";
+
+    function generateQuestions() {
+      const qList = [];
+      for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+        const nums = [
+          Math.floor(Math.random() * 90 + 1),
+          Math.floor(Math.random() * 90 + 1),
+          Math.floor(Math.random() * 90 + 1)
+        ];
+        const sorted = [...nums].sort((a, b) => a - b);
+        const min = sorted[0];
+        const mid = sorted[1];
+        const max = sorted[2];
+        const distToMax = Math.abs(mid - max);
+        const distToMin = Math.abs(mid - min);
+        const answer = distToMax > distToMin ? max : min;
+        qList.push({
+          question: "Identify whether the largest or the smallest number is further away from the remaining number.",
+          numbers: nums,
+          answer: answer
+        });
+      }
+      return qList;
+    }
+
+    function startQuiz() {
+      const difficulty = document.getElementById("difficulty-select").value;
+      if (!difficulty) {
+        alert("Please select a difficulty level.");
+        return;
+      }
+      currentDifficulty = difficulty;
+      questions = generateQuestions();
+      currentQuestion = 0;
+      score = 0;
+      document.getElementById("difficulty-select").style.display = "none";
+      document.getElementById("start-btn").style.display = "none";
+      document.getElementById("score").textContent = "";
+      showQuestion();
+    }
+
+    function startTimer() {
+      timeLeft = currentDifficulty === "easy" ? 10 : 5;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft === 0) {
+          clearInterval(timerInterval);
+          checkAnswer(null);
+        }
+      }, 1000);
+    }
+
+    function showQuestion() {
+      answered = false;
+      const questionData = questions[currentQuestion];
+      document.getElementById("question").textContent = questionData.question;
+      const container = document.getElementById("options-container");
+      container.innerHTML = "";
+      questionData.numbers.forEach(num => {
+        const button = document.createElement("button");
+        button.className = "number-box";
+        button.textContent = num;
+        button.onclick = () => {
+          if (!answered) {
+            answered = true;
+            clearInterval(timerInterval);
+            checkAnswer(button);
+          }
+        };
+        container.appendChild(button);
+      });
+      startTimer();
+    }
+
+    function checkAnswer(selectedButton) {
+      const questionData = questions[currentQuestion];
+      const buttons = document.querySelectorAll(".number-box");
+      buttons.forEach(btn => btn.disabled = true);
+      if (selectedButton) {
+        const selectedValue = parseInt(selectedButton.textContent);
+        if (selectedValue === questionData.answer) {
+          score++;
+          selectedButton.classList.add("correct");
+        } else {
+          selectedButton.classList.add("selected-wrong");
+        }
+      }
+      setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion < TOTAL_QUESTIONS) {
+          showQuestion();
+        } else {
+          document.getElementById("question").textContent = "Quiz Completed!";
+          document.getElementById("options-container").innerHTML = "";
+          document.getElementById("score").textContent = `You scored ${score} out of ${TOTAL_QUESTIONS} (${Math.round((score / TOTAL_QUESTIONS) * 100)}%)`;
+          document.getElementById("retry-btn").style.display = "block";
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
